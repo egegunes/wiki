@@ -1,0 +1,20 @@
+{{ define "main" }}
+  {{ partial "cmdline.html" . }}
+  <h1 class="page-title">{{ .Title }}</h1>
+  {{ with .Content }}
+    <article class="prose">{{ . }}</article>
+  {{ end }}
+  {{ with .Data.Terms.ByCount }}
+    <ul class="tags">
+      {{ range . }}
+        <li>
+          <a href="{{ .Page.RelPermalink }}">
+            {{ .Page.LinkTitle }}<span class="tags__count"> {{ .Count }}</span>
+          </a>
+        </li>
+      {{ end }}
+    </ul>
+  {{ else }}
+    <p class="listing-empty"># no terms yet</p>
+  {{ end }}
+{{ end }}

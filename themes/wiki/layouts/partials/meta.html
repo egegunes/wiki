@@ -1,0 +1,28 @@
+{{- /*
+When a reference note was last touched, and its tags. Staleness is real
+information for notes about fast-moving software, so it is stated plainly.
+*/}}
+{{- $d := .Lastmod }}
+{{- if $d.IsZero }}{{ $d = .Date }}{{ end }}
+
+<div class="meta">
+  {{- if not $d.IsZero }}
+    <span>updated
+      <time datetime="{{ $d.Format "2006-01-02" }}">{{ $d.Format "2006-01-02" }}</time>
+    </span>
+  {{- end }}
+  {{- range .GetTerms "tags" }}
+    <a class="meta__tag" href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>
+  {{- end }}
+</div>
+
+{{- $months := site.Params.staleAfterMonths | default 18 }}
+{{- if and (gt $months 0) (not $d.IsZero) }}
+  {{- $age := div (now.Sub $d).Hours 730.0 }}
+  {{- if gt $age (float $months) }}
+    <p class="stale">
+      Last touched {{ math.Round $age }} months ago — check this against current docs
+      before trusting it.
+    </p>
+  {{- end }}
+{{- end }}

@@ -1,0 +1,27 @@
+{{ define "main" }}
+  {{ partial "cmdline.html" . }}
+  <h1 class="page-title">{{ site.Title }}</h1>
+  {{ with site.Params.description }}
+    <div class="meta"><span>{{ . }}</span></div>
+  {{ end }}
+
+  {{ with .Content }}
+    <article class="prose">{{ . }}</article>
+  {{ end }}
+
+  {{ partial "listing.html" .Pages }}
+
+  {{ with first 12 site.RegularPages.ByLastmod.Reverse }}
+    <h2 class="section-heading">Recently updated</h2>
+    <ul class="listing">
+      {{ range . }}
+        <li>
+          <a href="{{ .RelPermalink }}">
+            <span class="listing__name">{{ .LinkTitle }}</span>
+            <span class="listing__date">{{ .Lastmod.Format "2006-01-02" }}</span>
+          </a>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}

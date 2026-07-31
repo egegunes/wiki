@@ -1,0 +1,13 @@
+name = 'wiki'
+license = 'MIT'
+licenselink = 'https://github.com/egegunes/wiki/blob/main/themes/wiki/LICENSE'
+description = 'A content-first Hugo theme for technical reference notes. No web fonts, no dependencies, no build step.'
+
+homepage = 'https://github.com/egegunes/wiki'
+demosite = 'https://github.com/egegunes/wiki'
+
+tags = ['wiki', 'documentation', 'notes', 'minimal', 'dark mode', 'search']
+features = ['client-side search', 'section tree navigation', 'light and dark', 'syntax highlighting', 'no JavaScript dependencies']
+
+[author]
+  name = 'Ege Güneş'

@@ -1,0 +1,58 @@
+baseURL = 'https://example.org/'
+languageCode = 'en-us'
+title = 'wiki'
+theme = 'wiki'
+
+enableGitInfo = false
+buildDrafts = false
+
+# Section and tag names are used exactly as written: pxc, cni, systemd — never
+# Pxc, Cnis, or Systemds.
+capitalizeListTitles = false
+pluralizeListTitles = false
+
+[params]
+  description = 'Notes and references.'
+  # Path root shown in the command-line breadcrumb.
+  root = 'wiki'
+  # Warn on notes older than this many months. Set to 0 to disable.
+  staleAfterMonths = 18
+  # Show the search box.
+  search = true
+  # Render a table of contents once a note has this many headings.
+  tocMinHeadings = 3
+  # repo = 'https://github.com/egegunes/wiki'
+
+# ── the theme needs the rest of this file ───────────────────────────────────
+# Hugo does not merge outputs, taxonomies, or markup from a theme's config, so
+# these have to live here rather than in themes/wiki/hugo.toml.
+
+# Search reads /index.json.
+[outputs]
+  home = ['html', 'rss', 'json']
+
+# One axis of cross-reference is enough for a wiki.
+[taxonomies]
+  tag = 'tags'
+
+[markup]
+  [markup.goldmark.renderer]
+    # Reference notes routinely need a raw <details> block or an HTML table.
+    unsafe = true
+  [markup.goldmark.parser.attribute]
+    block = true
+    title = true
+  [markup.goldmark.extensions]
+    definitionList = true
+    footnote = true
+    strikethrough = true
+    table = true
+    typographer = false
+  [markup.highlight]
+    # Token colours come from main.css so one sheet serves light and dark.
+    noClasses = false
+    lineNumbersInTable = true
+    tabWidth = 4
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 4

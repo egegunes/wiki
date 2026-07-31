@@ -1,0 +1,9 @@
+{{ define "main" }}
+  {{ partial "cmdline.html" . }}
+  <h1 class="page-title">{{ .Title }}</h1>
+  {{ partial "meta.html" . }}
+  {{ partial "toc.html" . }}
+  <article class="prose">
+    {{ .Content }}
+  </article>
+{{ end }}

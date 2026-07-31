@@ -1,0 +1,35 @@
+{{- /*
+A dense index of pages. Directories are marked with a trailing slash and their
+child count; notes show when they were last updated. No summaries unless the
+page sets `description` — a reference index should fit on one screen.
+
+@context {pages} The pages to list.
+*/}}
+{{- $pinned := where . "Weight" "!=" 0 }}
+{{- $rest := where . "Weight" 0 }}
+{{- $ordered := slice }}
+{{- range sort $pinned "Weight" }}{{ $ordered = $ordered | append . }}{{ end }}
+{{- range sort $rest "LinkTitle" }}{{ $ordered = $ordered | append . }}{{ end }}
+
+{{- with $ordered }}
+  <ul class="listing">
+    {{- range . }}
+      {{- $isDir := eq .Kind "section" }}
+      <li>
+        <a href="{{ .RelPermalink }}">
+          <span class="listing__name{{ if $isDir }} listing__name--dir{{ end }}">{{ .LinkTitle }}</span>
+          {{- if $isDir }}
+            <span class="listing__count">{{ i18n "notes" (len .RegularPagesRecursive) }}</span>
+          {{- else if not .Lastmod.IsZero }}
+            <span class="listing__date">{{ .Lastmod.Format "2006-01-02" }}</span>
+          {{- end }}
+        </a>
+        {{- with .Params.description }}
+          <p class="listing__desc">{{ . }}</p>
+        {{- end }}
+      </li>
+    {{- end }}
+  </ul>
+{{- else }}
+  <p class="listing-empty"># nothing here yet</p>
+{{- end }}

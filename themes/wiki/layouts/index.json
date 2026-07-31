@@ -1,0 +1,16 @@
+{{- /* Search index: title, where it lives, tags, and enough body to match on. */}}
+{{- $index := slice }}
+{{- range where site.Pages "Kind" "in" (slice "page" "section") }}
+  {{- if not .Params.noindex }}
+    {{- $dir := path.Dir (strings.Trim .RelPermalink "/") }}
+    {{- if or (eq $dir ".") (eq $dir "/") }}{{ $dir = "" }}{{ end }}
+    {{- $index = $index | append (dict
+      "t" .LinkTitle
+      "u" .RelPermalink
+      "s" $dir
+      "g" (.Params.tags | default slice)
+      "b" (.Plain | replaceRE `\s+` " " | truncate 1800 "")
+    ) }}
+  {{- end }}
+{{- end }}
+{{- $index | jsonify }}

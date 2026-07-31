@@ -1,0 +1,46 @@
+{{- /*
+The breadcrumb, written as the command that would produce this page:
+  a note     →  $ cat wiki/kubernetes/rbac.md
+  a section  →  $ ls wiki/kubernetes/
+  a term     →  $ grep -rl 'cgroups' wiki/
+Every path segment is a real link, so it also works as an ordinary breadcrumb.
+
+The path is assembled into a slice and joined once, which keeps template
+whitespace out of the rendered command.
+*/}}
+{{- $root := site.Params.root | default "wiki" }}
+
+{{- /* The last segment of a page's URL — its filename, in effect. */}}
+{{- $slug := "" }}
+{{- with (split (strings.Trim .RelPermalink "/") "/") }}
+  {{- $slug = index . (sub (len .) 1) }}
+{{- end }}
+
+{{- $parts := slice (printf `<a href="%s">%s</a>` site.Home.RelPermalink $root) }}
+{{- range .Ancestors.Reverse }}
+  {{- if not .IsHome }}
+    {{- $seg := "" }}
+    {{- with (split (strings.Trim .RelPermalink "/") "/") }}
+      {{- $seg = index . (sub (len .) 1) }}
+    {{- end }}
+    {{- $parts = $parts | append (printf `<a href="%s">%s</a>` .RelPermalink $seg) }}
+  {{- end }}
+{{- end }}
+
+{{- /* The current page is not a link to itself. */}}
+{{- if eq .Kind "page" }}
+  {{- $parts = $parts | append (printf "%s.md" $slug) }}
+{{- else if not .IsHome }}
+  {{- $parts = $parts | append (printf "%s/" $slug) }}
+{{- else }}
+  {{- $parts = $parts | append "" }}
+{{- end }}
+
+<p class="cmdline">
+  <span class="cmdline__sigil">$</span>
+  {{ if eq .Kind "term" -}}
+    <span class="cmdline__verb">grep -rl</span> '{{ .Title }}' <a href="{{ site.Home.RelPermalink }}">{{ $root }}</a>/
+  {{- else -}}
+    <span class="cmdline__verb">{{ if eq .Kind "page" }}cat{{ else }}ls{{ end }}</span> {{ delimit $parts "/" | safeHTML }}
+  {{- end }}
+</p>

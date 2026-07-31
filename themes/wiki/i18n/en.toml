@@ -1,0 +1,6 @@
+# Only what genuinely needs a plural rule. Everything else is written inline
+# in the templates, where it is easier to read than an indirection.
+
+[notes]
+one = '{{ . }} note'
+other = '{{ . }} notes'

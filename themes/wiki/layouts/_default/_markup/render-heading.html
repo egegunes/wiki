@@ -1,0 +1,8 @@
+{{- /*
+Headings get anchors — a wiki note gets linked to by section. The "#" glyph is
+drawn in CSS so it stays out of .Plain, and therefore out of the search index.
+*/ -}}
+<h{{ .Level }} id="{{ .Anchor }}">
+  {{- .Text | safeHTML -}}
+  <a class="anchor" href="#{{ .Anchor }}" aria-label="Link to this section"></a>
+</h{{ .Level }}>

@@ -1,0 +1,20 @@
+<header class="masthead">
+  <p class="masthead__title"><a href="{{ "/" | relURL }}">{{ site.Title }}</a></p>
+  <div class="masthead__spacer"></div>
+  {{ if site.Params.search | default true }}
+    <div class="search" data-search data-index="{{ "index.json" | relURL }}">
+      <input
+        class="search__input"
+        type="search"
+        placeholder="search  /"
+        aria-label="Search the wiki"
+        autocomplete="off"
+        spellcheck="false"
+        data-search-input>
+      <ul class="search__results" data-search-results hidden></ul>
+    </div>
+  {{ end }}
+  <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch color theme">
+    light/dark
+  </button>
+</header>

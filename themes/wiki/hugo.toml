@@ -1,0 +1,21 @@
+# Defaults for the theme's own params. Override any of these in the site's
+# hugo.toml — site config wins.
+#
+# Note: Hugo does not merge `outputs`, `taxonomies`, or `markup` from a theme's
+# config into the site's. Those settings must be copied into the site's
+# hugo.toml — see this theme's README for the block to paste.
+
+[params]
+  # The name used as the path root in the command-line breadcrumb.
+  root = 'wiki'
+  # Show the search box.
+  search = true
+  # Warn on notes older than this many months. 0 disables it.
+  staleAfterMonths = 18
+  # Render a table of contents once a note has this many headings.
+  tocMinHeadings = 3
+
+[module]
+  [module.hugoVersion]
+    extended = false
+    min = '0.128.0'

@@ -1,0 +1,1103 @@
+/* ==========================================================================
+   wiki — a content-first Hugo theme for technical reference notes
+   Chrome is a terminal. Prose is a document. No web fonts, no dependencies.
+   ========================================================================== */
+
+:root {
+  color-scheme: light dark;
+
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "DejaVu Sans Mono", "Liberation Mono", monospace;
+  --prose: Charter, "Bitstream Charter", "Iowan Old Style", "Source Serif 4",
+    Georgia, "DejaVu Serif", serif;
+
+  --measure: 68ch;
+  --sidebar: 15rem;
+  --gutter: 2rem;
+
+  --bg: #fdfdfc;
+  --bg-sub: #f4f4f1;
+  --bg-raised: #ffffff;
+  --fg: #1a1c1e;
+  --fg-muted: #74787e;
+  --rule: #e1e1de;
+  --accent: #1849c6;
+  --accent-soft: #e7edfb;
+  --warn: #8a5a00;
+  --warn-soft: #fbf3e2;
+
+  --syn-key: #9a2c7a;
+  --syn-str: #1f6b3a;
+  --syn-com: #8a9099;
+  --syn-num: #a35200;
+  --syn-fn: #1849c6;
+  --syn-typ: #6a3fbd;
+  --syn-op: #5a6069;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171b;
+    --bg-sub: #1c1f24;
+    --bg-raised: #1b1e23;
+    --fg: #d6d9de;
+    --fg-muted: #848b95;
+    --rule: #272b32;
+    --accent: #7fb2ff;
+    --accent-soft: #1e2836;
+    --warn: #d8a657;
+    --warn-soft: #251f14;
+
+    --syn-key: #e58bc0;
+    --syn-str: #8fca86;
+    --syn-com: #6f7680;
+    --syn-num: #e0a072;
+    --syn-fn: #7fb2ff;
+    --syn-typ: #c1a2f0;
+    --syn-op: #98a0aa;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #15171b;
+  --bg-sub: #1c1f24;
+  --bg-raised: #1b1e23;
+  --fg: #d6d9de;
+  --fg-muted: #848b95;
+  --rule: #272b32;
+  --accent: #7fb2ff;
+  --accent-soft: #1e2836;
+  --warn: #d8a657;
+  --warn-soft: #251f14;
+
+  --syn-key: #e58bc0;
+  --syn-str: #8fca86;
+  --syn-com: #6f7680;
+  --syn-num: #e0a072;
+  --syn-fn: #7fb2ff;
+  --syn-typ: #c1a2f0;
+  --syn-op: #98a0aa;
+}
+
+/* ── reset ───────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--prose);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── shell ───────────────────────────────────────────────────────────────── */
+
+.masthead {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.6rem var(--gutter);
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+}
+
+.masthead__title {
+  margin: 0;
+  font: 600 0.9375rem/1 var(--mono);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.masthead__title a {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.masthead__title a::before {
+  content: "~/";
+  color: var(--fg-muted);
+  font-weight: 400;
+}
+
+.masthead__spacer {
+  flex: 1;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidebar) minmax(0, 1fr);
+  gap: 0 3rem;
+  align-items: start;
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* ── sidebar nav ─────────────────────────────────────────────────────────── */
+
+.sidebar {
+  position: sticky;
+  top: 3rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  padding: 2rem 0;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  overscroll-behavior: contain;
+}
+
+/* The tree collapses only on narrow screens. On wide ones the summary is
+   hidden, so the panel must stay open even if it was collapsed while narrow. */
+.sidebar > summary {
+  display: none;
+}
+
+.sidebar:not([open]) > nav {
+  display: block;
+}
+
+.sidebar:not([open])::details-content {
+  content-visibility: visible;
+}
+
+.nav-tree,
+.nav-tree ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-tree ul {
+  margin-left: 0.75rem;
+  border-left: 1px solid var(--rule);
+  padding-left: 0.6rem;
+}
+
+.nav-tree li {
+  margin: 0.15rem 0;
+}
+
+.nav-tree a {
+  display: block;
+  padding: 0.1rem 0.35rem;
+  margin-left: -0.35rem;
+  border-radius: 3px;
+  color: var(--fg-muted);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.nav-tree a:hover {
+  color: var(--fg);
+  background: var(--bg-sub);
+}
+
+.nav-tree a.is-section {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.nav-tree a.is-ancestor {
+  color: var(--fg);
+}
+
+.nav-tree a.is-current {
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+.nav-aside {
+  margin-top: 1.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+.nav-aside a {
+  display: block;
+  padding: 0.1rem 0;
+  color: var(--fg-muted);
+  text-decoration: none;
+}
+
+.nav-aside a:hover {
+  color: var(--fg);
+}
+
+/* ── content column ──────────────────────────────────────────────────────── */
+
+.content {
+  min-width: 0;
+  padding: 2rem 0 5rem;
+}
+
+/* Signature: the breadcrumb is the command that produced this page. */
+.cmdline {
+  font: 400 0.8125rem/1.5 var(--mono);
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
+
+.cmdline__sigil,
+.cmdline__verb {
+  opacity: 0.6;
+}
+
+.cmdline a {
+  color: var(--fg-muted);
+  text-decoration: none;
+}
+
+.cmdline a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.page-title {
+  margin: 0.6rem 0 0;
+  font: 600 1.6rem/1.25 var(--mono);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin: 0.75rem 0 0;
+  font: 400 0.8125rem/1.6 var(--mono);
+  color: var(--fg-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  align-items: baseline;
+}
+
+.meta a {
+  color: var(--fg-muted);
+}
+
+.meta__tag {
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+
+.meta__tag::before {
+  content: "#";
+  opacity: 0.5;
+}
+
+.meta__tag:hover {
+  color: var(--accent);
+  border-bottom-color: currentColor;
+}
+
+.stale {
+  margin: 1.25rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 2px solid var(--warn);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font: 400 0.8125rem/1.5 var(--mono);
+  max-width: var(--measure);
+}
+
+/* ── prose ───────────────────────────────────────────────────────────────── */
+
+/* Prose is held to a reading measure; code and tables are allowed to breathe
+   wider, because a wrapped command is a command you cannot paste. */
+.prose {
+  margin-top: 2rem;
+  max-width: 88ch;
+}
+
+.prose > * {
+  margin: 0 0 1.1rem;
+}
+
+.prose > :is(p, ul, ol, dl, blockquote, .footnotes, details) {
+  max-width: var(--measure);
+}
+
+.prose > :last-child {
+  margin-bottom: 0;
+}
+
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-family: var(--mono);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  scroll-margin-top: 4rem;
+  overflow-wrap: anywhere;
+}
+
+.prose h2 {
+  margin: 2.5rem 0 1rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--rule);
+  font-size: 1.1875rem;
+}
+
+/* A note that opens on a heading needs no divider above it. */
+.prose > h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.prose h3 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.0625rem;
+}
+
+.prose h4 {
+  margin: 1.6rem 0 0.6rem;
+  font-size: 0.9375rem;
+  color: var(--fg-muted);
+}
+
+.prose h5,
+.prose h6 {
+  margin: 1.4rem 0 0.5rem;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+.anchor {
+  margin-left: 0.4rem;
+  color: var(--fg-muted);
+  font-weight: 400;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+/* Drawn, not written — keeps "#" out of .Plain and so out of search. */
+.anchor::before {
+  content: "#";
+}
+
+:is(h2, h3, h4, h5, h6):hover .anchor,
+.anchor:focus-visible {
+  opacity: 1;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4rem;
+}
+
+.prose li {
+  margin: 0.3rem 0;
+}
+
+.prose li > ul,
+.prose li > ol {
+  margin: 0.3rem 0;
+}
+
+.prose blockquote {
+  margin-left: 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--rule);
+  color: var(--fg-muted);
+}
+
+.prose hr {
+  height: 0;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 2rem 0;
+}
+
+/* Definition lists earn their keep in a reference wiki: flag → meaning. */
+.prose dl {
+  display: grid;
+  grid-template-columns: minmax(6rem, auto) 1fr;
+  gap: 0.4rem 1.25rem;
+  margin: 0 0 1.1rem;
+}
+
+.prose dt {
+  font: 600 0.875rem/1.6 var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.prose dd {
+  margin: 0;
+}
+
+.prose sup {
+  line-height: 0;
+}
+
+.footnotes {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.9375rem;
+  color: var(--fg-muted);
+}
+
+/* ── tables ──────────────────────────────────────────────────────────────── */
+
+.table-scroll {
+  overflow-x: auto;
+  margin: 0 0 1.1rem;
+}
+
+.prose table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.prose th,
+.prose td {
+  padding: 0.4rem 0.9rem 0.4rem 0;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+  /* Fallback for when JS has not wrapped the table in a scroll container. */
+  overflow-wrap: anywhere;
+}
+
+.prose th {
+  border-bottom-color: var(--fg-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.prose tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* ── code ────────────────────────────────────────────────────────────────── */
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--mono);
+}
+
+:not(pre) > code {
+  padding: 0.1em 0.3em;
+  background: var(--bg-sub);
+  border-radius: 3px;
+  font-size: 0.875em;
+  overflow-wrap: anywhere;
+}
+
+.prose kbd {
+  padding: 0.1em 0.35em;
+  border: 1px solid var(--rule);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  background: var(--bg-raised);
+  font-size: 0.8125em;
+}
+
+/* Code blocks break the prose measure — commands should not wrap. */
+.code {
+  position: relative;
+  margin: 0 0 1.25rem;
+  background: var(--bg-sub);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+
+.code pre {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  tab-size: 4;
+}
+
+.code pre code {
+  display: block;
+  min-width: max-content;
+}
+
+/* No language badge: a block's language is obvious from its content, and a
+   label pinned to the corner covers the code once the block scrolls. The
+   language stays on the element as data-lang for anyone who wants it. */
+.code__copy {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  padding: 0.2rem 0.45rem;
+  font: 400 0.6875rem/1.4 var(--mono);
+  color: var(--fg-muted);
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.code:hover .code__copy,
+.code__copy:focus-visible {
+  opacity: 1;
+}
+
+.code__copy:hover {
+  color: var(--fg);
+  border-color: var(--fg-muted);
+}
+
+/* Nothing hovers on a touch screen, so the button has to be there already —
+   and the block has to leave it room rather than let it sit over the code. */
+@media (hover: none) {
+  .code__copy {
+    opacity: 1;
+  }
+
+  .code pre {
+    padding-top: 2rem;
+  }
+}
+
+/* Chroma tokens, mapped to theme variables so one sheet serves both modes. */
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr {
+  color: var(--syn-key);
+}
+
+.chroma .kt,
+.chroma .nc,
+.chroma .nn,
+.chroma .ne,
+.chroma .nt {
+  color: var(--syn-typ);
+}
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .dl,
+.chroma .sd,
+.chroma .s2,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sx,
+.chroma .sr,
+.chroma .s1,
+.chroma .ss {
+  color: var(--syn-str);
+}
+
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf {
+  color: var(--syn-com);
+  font-style: italic;
+}
+
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .il,
+.chroma .mo,
+.chroma .no,
+.chroma .nv,
+.chroma .vc,
+.chroma .vg,
+.chroma .vi {
+  color: var(--syn-num);
+}
+
+.chroma .nf,
+.chroma .fm,
+.chroma .nb,
+.chroma .bp,
+.chroma .nd,
+.chroma .na {
+  color: var(--syn-fn);
+}
+
+.chroma .o,
+.chroma .ow,
+.chroma .p {
+  color: var(--syn-op);
+}
+
+.chroma .gd {
+  color: var(--syn-key);
+}
+
+.chroma .gi {
+  color: var(--syn-str);
+}
+
+.chroma .ge {
+  font-style: italic;
+}
+
+.chroma .gs {
+  font-weight: 600;
+}
+
+.chroma .err {
+  color: var(--warn);
+}
+
+/* line numbers */
+.chroma .lnt,
+.chroma .ln {
+  color: var(--fg-muted);
+  opacity: 0.7;
+  user-select: none;
+}
+
+.chroma .lntable {
+  border-collapse: collapse;
+  width: auto;
+  margin: 0;
+}
+
+.chroma .lntable td {
+  padding: 0;
+  border: 0;
+  vertical-align: top;
+}
+
+.chroma .hl {
+  display: block;
+  background: var(--accent-soft);
+}
+
+/* ── page lists ──────────────────────────────────────────────────────────── */
+
+.listing {
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.listing > li {
+  border-bottom: 1px solid var(--rule);
+}
+
+.listing a {
+  display: flex;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.55rem 0.5rem 0.55rem 0;
+  text-decoration: none;
+  color: var(--fg);
+}
+
+.listing a:hover {
+  background: var(--bg-sub);
+}
+
+.listing a:hover .listing__name {
+  color: var(--accent);
+}
+
+.listing__name {
+  font: 500 0.9375rem/1.4 var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.listing__name--dir::after {
+  content: "/";
+  color: var(--fg-muted);
+}
+
+.listing__count,
+.listing__date {
+  flex: none;
+  font: 400 0.75rem/1.4 var(--mono);
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.listing__desc {
+  padding: 0 0 0.55rem;
+  margin: -0.2rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--fg-muted);
+  max-width: var(--measure);
+}
+
+.listing-empty {
+  margin: 1.5rem 0;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+.section-heading {
+  margin: 2.5rem 0 0;
+  padding-bottom: 0.4rem;
+  font: 600 0.75rem/1.4 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* ── tag cloud ───────────────────────────────────────────────────────────── */
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tags a {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  font: 400 0.8125rem/1.5 var(--mono);
+  color: var(--fg-muted);
+  text-decoration: none;
+}
+
+.tags a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.tags__count {
+  opacity: 0.6;
+}
+
+/* ── table of contents ───────────────────────────────────────────────────── */
+
+.toc {
+  margin: 1.75rem 0 0;
+  padding: 0.5rem 0 0.15rem 1rem;
+  border-left: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  max-width: var(--measure);
+}
+
+.toc__label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.toc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc ul ul {
+  padding-left: 1rem;
+}
+
+.toc li {
+  margin: 0.15rem 0;
+}
+
+.toc a {
+  color: var(--fg-muted);
+  text-decoration: none;
+}
+
+.toc a:hover {
+  color: var(--accent);
+}
+
+/* ── search ──────────────────────────────────────────────────────────────── */
+
+.search {
+  position: relative;
+  flex: 0 1 22rem;
+  min-width: 8rem;
+}
+
+.search__input {
+  width: 100%;
+  padding: 0.3rem 0.55rem;
+  background: var(--bg-sub);
+  color: var(--fg);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  font: 400 0.8125rem/1.5 var(--mono);
+}
+
+.search__input::placeholder {
+  color: var(--fg-muted);
+}
+
+.search__input:focus {
+  background: var(--bg-raised);
+}
+
+.search__results {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  left: 0;
+  z-index: 30;
+  max-height: min(30rem, calc(100vh - 5rem));
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.25);
+  overscroll-behavior: contain;
+}
+
+.search__results[hidden] {
+  display: none;
+}
+
+.search__results a {
+  display: block;
+  padding: 0.35rem 0.5rem;
+  border-radius: 3px;
+  text-decoration: none;
+  color: var(--fg);
+}
+
+.search__results a:hover,
+.search__results a[aria-selected="true"] {
+  background: var(--accent-soft);
+}
+
+.search__title {
+  display: block;
+  font: 500 0.8125rem/1.4 var(--mono);
+}
+
+.search__where {
+  display: block;
+  font: 400 0.6875rem/1.5 var(--mono);
+  color: var(--fg-muted);
+}
+
+.search__snippet {
+  display: -webkit-box;
+  margin-top: 0.1rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--fg-muted);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.search__snippet mark,
+.search__title mark {
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.search__empty {
+  padding: 0.5rem;
+  font: 400 0.8125rem/1.5 var(--mono);
+  color: var(--fg-muted);
+}
+
+/* ── theme toggle ────────────────────────────────────────────────────────── */
+
+.theme-toggle {
+  flex: none;
+  padding: 0.3rem 0.5rem;
+  background: none;
+  color: var(--fg-muted);
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font: 400 0.8125rem/1.5 var(--mono);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--fg);
+  border-color: var(--rule);
+}
+
+/* ── footer ──────────────────────────────────────────────────────────────── */
+
+.footer {
+  grid-column: 1 / -1;
+  padding: 1.25rem 0 2.5rem;
+  border-top: 1px solid var(--rule);
+  font: 400 0.75rem/1.6 var(--mono);
+  color: var(--fg-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+}
+
+.footer a {
+  color: var(--fg-muted);
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip-link:focus {
+  position: static;
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  font: 400 0.8125rem/1.5 var(--mono);
+}
+
+/* ── responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 60rem) {
+  :root {
+    --gutter: 1.1rem;
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    margin-top: 1rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+
+  .sidebar > summary {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    color: var(--fg-muted);
+    cursor: pointer;
+  }
+
+  .sidebar:not([open]) > nav {
+    display: none;
+  }
+
+  .sidebar:not([open])::details-content {
+    content-visibility: hidden;
+  }
+
+  .sidebar[open] > summary {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .sidebar > nav {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .content {
+    padding: 1.5rem 0 3rem;
+  }
+
+  .prose h2 {
+    margin-top: 2rem;
+  }
+
+  .masthead {
+    flex-wrap: wrap;
+  }
+
+  .search {
+    flex: 1 1 100%;
+    order: 3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .masthead,
+  .sidebar,
+  .toc,
+  .code__copy,
+  .footer {
+    display: none;
+  }
+
+  .layout {
+    display: block;
+    max-width: none;
+    padding: 0;
+  }
+
+  body {
+    color: #000;
+    background: #fff;
+  }
+}

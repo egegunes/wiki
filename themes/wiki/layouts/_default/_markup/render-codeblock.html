@@ -1,0 +1,7 @@
+{{- /*
+Code blocks carry their language and, with JS, a copy button. The language is
+an attribute rather than text so it stays out of the search index.
+*/ -}}
+<div class="code"{{ with .Type }} data-lang="{{ . }}"{{ end }}>
+  {{- transform.Highlight (strings.TrimRight "\n" .Inner) .Type .Options -}}
+</div>

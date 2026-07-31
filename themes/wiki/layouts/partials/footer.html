@@ -1,0 +1,10 @@
+<footer class="footer">
+  <span>{{ or site.Copyright (printf "© %d %s" now.Year site.Title) }}</span>
+  {{- with site.Params.repo }}
+    <a href="{{ . }}">source</a>
+  {{- end }}
+  {{- with site.Home.OutputFormats.Get "rss" }}
+    <a href="{{ .RelPermalink }}">feed</a>
+  {{- end }}
+  <span>{{ i18n "notes" (len site.RegularPages) }}</span>
+</footer>

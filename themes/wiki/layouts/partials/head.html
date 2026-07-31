@@ -1,0 +1,29 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ printf "%s · %s" .Title site.Title }}{{ end }}</title>
+
+{{- with or .Description .Params.description site.Params.description }}
+  <meta name="description" content="{{ . | plainify | truncate 180 }}">
+{{- end }}
+
+{{- if .Params.noindex }}
+  <meta name="robots" content="noindex">
+{{- end }}
+
+<link rel="canonical" href="{{ .Permalink }}">
+{{- with site.Home.OutputFormats.Get "rss" }}
+  <link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ site.Title }}">
+{{- end }}
+{{- with resources.Get "favicon.svg" }}
+  <link rel="icon" href="{{ .RelPermalink }}" type="image/svg+xml">
+{{- end }}
+
+{{ partialCached "head/css.html" . }}
+
+{{- /* Apply the saved theme before first paint so there is no flash. */}}
+<script>
+  try {
+    var t = localStorage.getItem("theme");
+    if (t) document.documentElement.dataset.theme = t;
+  } catch (e) {}
+</script>

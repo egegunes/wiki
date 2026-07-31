@@ -1,0 +1,51 @@
+{{- /*
+The full page tree. Always visible on wide screens — CSS keeps the panel open
+there and hides its summary — and collapsed on narrow ones, so a phone opens
+straight onto the note rather than onto the navigation.
+*/}}
+<details class="sidebar">
+  <summary>contents</summary>
+  <nav aria-label="Wiki contents">
+    <ul class="nav-tree">
+      {{- partial "inline/tree.html" (dict "page" . "parent" site.Home) }}
+    </ul>
+
+    <div class="nav-aside">
+      {{- range $name, $terms := site.Taxonomies }}
+        {{- if $terms }}
+          <a href="{{ (site.GetPage $name).RelPermalink }}">{{ $name }} ({{ len $terms }})</a>
+        {{- end }}
+      {{- end }}
+    </div>
+  </nav>
+</details>
+
+{{- /* Sort: explicitly weighted pages first, then everything else A→Z. */}}
+{{- define "partials/inline/tree.html" }}
+  {{- $page := .page }}
+  {{- $pinned := where .parent.Pages "Weight" "!=" 0 }}
+  {{- $rest := where .parent.Pages "Weight" 0 }}
+  {{- $ordered := slice }}
+  {{- range sort $pinned "Weight" }}{{ $ordered = $ordered | append . }}{{ end }}
+  {{- range sort $rest "LinkTitle" }}{{ $ordered = $ordered | append . }}{{ end }}
+
+  {{- range $ordered }}
+    {{- $class := slice }}
+    {{- if eq .Kind "section" }}{{ $class = $class | append "is-section" }}{{ end }}
+    {{- if eq $page.RelPermalink .RelPermalink }}
+      {{- $class = $class | append "is-current" }}
+    {{- else if .IsAncestor $page }}
+      {{- $class = $class | append "is-ancestor" }}
+    {{- end }}
+    <li>
+      <a href="{{ .RelPermalink }}"
+        {{- with $class }} class="{{ delimit . " " }}"{{ end }}
+        {{- if eq $page.RelPermalink .RelPermalink }} aria-current="page"{{ end }}>{{ .LinkTitle }}</a>
+      {{- if and (eq .Kind "section") .Pages }}
+        <ul>
+          {{- partial "inline/tree.html" (dict "page" $page "parent" .) }}
+        </ul>
+      {{- end }}
+    </li>
+  {{- end }}
+{{- end }}

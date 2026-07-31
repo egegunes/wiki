@@ -1,0 +1,11 @@
+{{- /* Only worth the space once a note has enough headings to get lost in. */}}
+{{- if ne .Params.toc false }}
+  {{- $min := site.Params.tocMinHeadings | default 3 }}
+  {{- $count := len (findRE `<a href="#` .TableOfContents) }}
+  {{- if ge $count $min }}
+    <nav class="toc" aria-labelledby="toc-label">
+      <span class="toc__label" id="toc-label">On this page</span>
+      {{ .TableOfContents }}
+    </nav>
+  {{- end }}
+{{- end }}
