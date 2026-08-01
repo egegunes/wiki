@@ -44,11 +44,9 @@ just because it was edited.
 
 ## Staleness
 
-Notes go quietly stale after 18 months and say so at the top. Kubernetes API
-groups and kernel flags do not age well, and a note that lies is worse than no
-note. Bump `lastmod` when you re-verify something; change
-`staleAfterMonths` in `hugo.toml` to move the threshold, or set it to `0` to
-turn it off.
+Notes go quietly stale after 18 months and say so at the top. Bump `lastmod`
+when you re-verify something; change `staleAfterMonths` in `hugo.toml` to move
+the threshold, or set it to `0` to turn it off.
 
 ## Markdown worth remembering
 

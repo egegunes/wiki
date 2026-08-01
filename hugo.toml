@@ -16,7 +16,7 @@ pluralizeListTitles = false
   # Path root shown in the command-line breadcrumb.
   root = 'wiki'
   # Warn on notes older than this many months. Set to 0 to disable.
-  staleAfterMonths = 18
+  staleAfterMonths = 0
   # Show the search box.
   search = true
   # Render a table of contents once a note has this many headings.
