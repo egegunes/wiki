@@ -125,6 +125,41 @@ Only `title` is required.
 | `toc`         | `false` suppresses the table of contents.                   |
 | `noindex`     | `true` keeps a note out of search and out of search engines. |
 
+## Nested folders
+
+Folders nest as deep as you like — `content/programming/golang/stdlib/` works,
+and the tree, breadcrumbs, listings, search paths, and wikilinks all follow.
+
+**Every nested folder needs an `_index.md`.** Hugo promotes top-level
+directories under `content/` to sections automatically, but a nested one only
+becomes a section if it holds an `_index.md`. Without it the folder has no page
+of its own, so `/programming/golang/` is a 404, and its notes get filed under
+the nearest ancestor that *is* a section — they appear in the wrong place in
+the tree and their breadcrumbs skip a level. Nothing in the build fails, which
+is what makes it easy to miss.
+
+The theme checks for this and warns:
+
+```
+WARN  content/programming/golang/ has no _index.md, so it is not a section:
+      the folder will 404 and its notes will be filed under the nearest parent
+      section. Fix with: hugo new content programming/golang/_index.md --kind section
+```
+
+So create folders with their index in one step:
+
+```sh
+hugo new content programming/golang/_index.md --kind section
+```
+
+Page bundles — a folder holding `index.md` plus its images — are not sections
+and are correctly left alone by the check.
+
+In the sidebar, top-level sections stay open and nested ones fold away unless
+they are on the path to the current note, so a deep tree does not turn the
+sidebar into a listing of the whole wiki. The carets toggle branches open;
+it is `<details>` throughout, with no JavaScript.
+
 ## Wikilinks
 
 | Written | Resolves to |

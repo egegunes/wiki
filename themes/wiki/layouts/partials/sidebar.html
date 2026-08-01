@@ -2,12 +2,17 @@
 The full page tree. Always visible on wide screens — CSS keeps the panel open
 there and hides its summary — and collapsed on narrow ones, so a phone opens
 straight onto the note rather than onto the navigation.
+
+Nested sections collapse. Top-level sections and anything on the path to the
+current note stay open; the rest fold away, so a deep content tree does not
+turn the sidebar into a directory listing of the whole wiki. No JavaScript —
+it is <details> all the way down.
 */}}
 <details class="sidebar">
   <summary>contents</summary>
   <nav aria-label="Wiki contents">
     <ul class="nav-tree">
-      {{- partial "inline/tree.html" (dict "page" . "parent" site.Home) }}
+      {{- partial "inline/tree.html" (dict "page" . "parent" site.Home "depth" 1) }}
     </ul>
 
     <div class="nav-aside">
@@ -23,6 +28,7 @@ straight onto the note rather than onto the navigation.
 {{- /* Sort: explicitly weighted pages first, then everything else A→Z. */}}
 {{- define "partials/inline/tree.html" }}
   {{- $page := .page }}
+  {{- $depth := .depth }}
   {{- $pinned := where .parent.Pages "Weight" "!=" 0 }}
   {{- $rest := where .parent.Pages "Weight" 0 }}
   {{- $ordered := slice }}
@@ -30,21 +36,33 @@ straight onto the note rather than onto the navigation.
   {{- range sort $rest "LinkTitle" }}{{ $ordered = $ordered | append . }}{{ end }}
 
   {{- range $ordered }}
+    {{- $current := eq $page.RelPermalink .RelPermalink }}
+    {{- $onPath := or $current (.IsAncestor $page) }}
+
     {{- $class := slice }}
     {{- if eq .Kind "section" }}{{ $class = $class | append "is-section" }}{{ end }}
-    {{- if eq $page.RelPermalink .RelPermalink }}
+    {{- if $current }}
       {{- $class = $class | append "is-current" }}
     {{- else if .IsAncestor $page }}
       {{- $class = $class | append "is-ancestor" }}
     {{- end }}
+
+    {{- $link := printf `<a href="%s"%s%s>%s</a>`
+      .RelPermalink
+      (cond (gt (len $class) 0) (printf ` class="%s"` (delimit $class " ")) "")
+      (cond $current ` aria-current="page"` "")
+      .LinkTitle }}
+
     <li>
-      <a href="{{ .RelPermalink }}"
-        {{- with $class }} class="{{ delimit . " " }}"{{ end }}
-        {{- if eq $page.RelPermalink .RelPermalink }} aria-current="page"{{ end }}>{{ .LinkTitle }}</a>
       {{- if and (eq .Kind "section") .Pages }}
-        <ul>
-          {{- partial "inline/tree.html" (dict "page" $page "parent" .) }}
-        </ul>
+        <details{{ if or (eq $depth 1) $onPath }} open{{ end }}>
+          <summary>{{ $link | safeHTML }}</summary>
+          <ul>
+            {{- partial "inline/tree.html" (dict "page" $page "parent" . "depth" (add $depth 1)) }}
+          </ul>
+        </details>
+      {{- else }}
+        {{- $link | safeHTML }}
       {{- end }}
     </li>
   {{- end }}

@@ -1,0 +1,44 @@
+{{- /*
+Warns about nested content directories that are missing an _index.md.
+
+Hugo promotes every top-level directory under content/ to a section, but a
+nested one only becomes a section if it holds an _index.md. Without it the
+folder has no page of its own — /programming/bash/ is a 404 — and its notes are
+filed under the nearest ancestor that is a section, so they show up in the
+wrong place in the tree and in breadcrumbs. Nothing in the build fails, which
+is exactly what makes it worth warning about.
+
+Directories holding an index.md are leaf bundles, not sections, and are skipped.
+*/}}
+{{- partial "inline/scan-sections.html" (dict "dir" "content" "depth" 1) }}
+
+{{- define "partials/inline/scan-sections.html" }}
+  {{- $dir := .dir }}
+  {{- $depth := .depth }}
+  {{- range readDir $dir }}
+    {{- if and .IsDir (not (hasPrefix .Name ".")) }}
+      {{- $sub := path.Join $dir .Name }}
+      {{- $isSection := false }}
+      {{- $isLeafBundle := false }}
+      {{- $hasContent := false }}
+      {{- range readDir $sub }}
+        {{- if .IsDir }}
+          {{- $hasContent = true }}
+        {{- else if hasPrefix .Name "_index." }}
+          {{- $isSection = true }}
+        {{- else if hasPrefix .Name "index." }}
+          {{- $isLeafBundle = true }}
+        {{- else if hasSuffix .Name ".md" }}
+          {{- $hasContent = true }}
+        {{- end }}
+      {{- end }}
+
+      {{- if not $isLeafBundle }}
+        {{- if and (gt $depth 1) $hasContent (not $isSection) }}
+          {{- warnf "%s/ has no _index.md, so it is not a section: the folder will 404 and its notes will be filed under the nearest parent section. Fix with: hugo new content %s/_index.md --kind section" $sub (strings.TrimPrefix "content/" $sub) }}
+        {{- end }}
+        {{- partial "inline/scan-sections.html" (dict "dir" $sub "depth" (add $depth 1)) }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}

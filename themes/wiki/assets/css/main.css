@@ -201,9 +201,43 @@ video {
   list-style: none;
 }
 
+/* Room for the disclosure carets, which sit in the gutter so that section
+   names and note names still start on the same left edge. */
+.nav-tree {
+  padding-left: 0.9rem;
+}
+
+.nav-tree summary {
+  position: relative;
+  cursor: pointer;
+  list-style: none;
+}
+
+.nav-tree summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-tree summary::before {
+  content: "›";
+  position: absolute;
+  left: -0.85rem;
+  top: 0.1rem;
+  color: var(--fg-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.nav-tree details[open] > summary::before {
+  content: "⌄";
+  top: -0.1rem;
+}
+
+.nav-tree summary:hover::before {
+  color: var(--fg);
+}
+
 .nav-tree ul {
   margin-left: 0.75rem;
-  border-left: 1px solid var(--rule);
   padding-left: 0.6rem;
 }
 

@@ -3,6 +3,7 @@
 <head>
   {{ partial "head.html" . }}
 </head>
+{{- partialCached "check-sections.html" . }}
 <body data-index="{{ "index.json" | relURL }}">
   <a class="skip-link" href="#content">Skip to content</a>
   {{ partial "masthead.html" . }}
