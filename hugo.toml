@@ -1,6 +1,6 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://wiki.ege.dev/'
 languageCode = 'en-us'
-title = 'wiki'
+title = "ege's wiki"
 theme = 'wiki'
 
 enableGitInfo = false
