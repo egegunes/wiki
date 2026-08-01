@@ -6,7 +6,7 @@
   {{ end }}
 
   {{ with .Content }}
-    <article class="prose">{{ . }}</article>
+    <article class="prose">{{ partial "content.html" $ }}</article>
   {{ end }}
 
   {{ partial "listing.html" .Pages }}

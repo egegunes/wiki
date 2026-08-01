@@ -29,6 +29,14 @@ Every segment is a link, so it works as an ordinary breadcrumb too.
 - **Section tree navigation.** Directories are the only structure. The whole
   tree is in the sidebar on wide screens and collapsed behind `contents` on
   narrow ones, so a phone opens onto the note rather than onto the navigation.
+- **Obsidian-style `[[wikilinks]]`**, resolved by title, filename, or path;
+  `[[note|link text]]` and `[[note#heading]]` both work. A name with no note
+  behind it renders as an unresolved link rather than vanishing. Brackets
+  inside code are untouched, so `if [[ -z $x ]]` stays shell.
+- **Backlinks.** Each note lists the notes that link to it, so a
+  cross-reference can be read in both directions.
+- **Link previews.** Hovering a wikilink shows the opening of the note it
+  points at, so a reference can be checked without losing your place.
 - **Client-side search** over a generated `/index.json`. Title beats tag beats
   path beats body; all terms must match. Press <kbd>/</kbd> to focus,
   arrows to move, <kbd>Enter</kbd> to open.
@@ -97,6 +105,7 @@ prose sits next to shell commands.
 | ------------------ | -------- | ------------------------------------------------- |
 | `root`             | `wiki`   | Path root shown in the command-line breadcrumb.   |
 | `search`           | `true`   | Show the search box.                              |
+| `linkPreviews`     | `true`   | Preview a wikilink's target on hover.             |
 | `staleAfterMonths` | `18`     | Warn on notes older than this. `0` disables it.   |
 | `tocMinHeadings`   | `3`      | Headings needed before a table of contents shows. |
 | `description`      | —        | Shown under the site title and as meta description. |
@@ -115,6 +124,52 @@ Only `title` is required.
 | `description` | One line under the entry in its parent listing.            |
 | `toc`         | `false` suppresses the table of contents.                   |
 | `noindex`     | `true` keeps a note out of search and out of search engines. |
+
+## Wikilinks
+
+| Written | Resolves to |
+| ------- | ----------- |
+| `[[MySQL Group Replication]]` | the note with that title |
+| `[[mysql-group-replication]]` | the note with that filename |
+| `[[databases/mysql-group-replication]]` | the note at that path |
+| `[[Note\|other text]]` | that note, shown as "other text" |
+| `[[Note#Some heading]]` | that note, at that heading |
+
+Matching is case-insensitive. Unmatched names render as
+`<span class="wikilink--missing">`, styled with a dashed underline.
+
+Wikilinks are resolved in `partials/content.html`, which the page templates
+call in place of `.Content`. It splits the rendered HTML on `<code>` elements
+and rewrites only the text outside them, so bracket syntax in shell, Go, or any
+other code survives untouched. Pages with no `[[` in them skip the work
+entirely.
+
+## Link previews
+
+Hovering a resolved wikilink shows a card with the target note's title, its
+folder, and the first 240 characters of its text. It reads from the same
+`/index.json` the search box uses — one lazy fetch, shared, and nothing is
+requested until the reader hovers a link or opens search.
+
+Deliberately narrow: pointer devices only (`hover: hover`), so a tap on a
+phone just follows the link. Unresolved links show no card, since there is
+nothing to preview. The card never takes the pointer, so it cannot flicker the
+link underneath, and it is dismissed by moving away, scrolling, or
+<kbd>Esc</kbd>. Set `linkPreviews = false` to turn it off.
+
+## Backlinks
+
+Notes and sections end with a **Linked from** list of everything that
+wikilinks to them. Self-links and repeated links to the same note collapse to
+one entry, and links written inside code are not links.
+
+Only wikilinks count. A plain Markdown link to another note is a link on the
+page but does not produce a backlink.
+
+The graph is built once per site by `partials/wikilink-edges.html` and read
+back per page by `partials/backlinks.html`. Both share the resolver in
+`partials/wikilink-parse.html`, so a backlink exists exactly when the
+corresponding forward link resolved.
 
 ## Ordering
 

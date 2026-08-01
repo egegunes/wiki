@@ -1,0 +1,30 @@
+{{- /*
+The site's wikilink graph, as a flat list of edges. Built once via
+partialCached and read back per page by partials/backlinks.html.
+
+A flat slice rather than a map keyed by URL: merge compares map keys
+case-insensitively, and a plain list needs no such care.
+
+Only links in prose count. Code is stripped before scanning, so the shell in
+`if [[ -z $x ]]` and the [[examples]] inside a fenced block are not links.
+
+@return {slice} of {from: page, to: url}
+*/}}
+{{- $index := partialCached "wikilink-index.html" . }}
+{{- $edges := slice }}
+
+{{- range where site.Pages "Kind" "in" (slice "page" "section") }}
+  {{- $from := . }}
+  {{- $html := printf "%s" .Content }}
+  {{- if strings.Contains $html "[[" }}
+    {{- $prose := replaceRE `(?s)<code[^>]*>.*?</code>` " " $html }}
+    {{- range $raw := findRE `\[\[[^\[\]<>\n]+\]\]` $prose }}
+      {{- $link := partial "wikilink-parse.html" (dict "raw" $raw "index" $index) }}
+      {{- with $link.url }}
+        {{- $edges = $edges | append (dict "from" $from "to" .) }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- return $edges }}

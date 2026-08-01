@@ -84,8 +84,130 @@
   }
 })();
 
+// ── the note index ──────────────────────────────────────────────────────────
+// One lazy fetch of /index.json, shared by search and by link previews.
+// Nothing loads it until the reader reaches for one of them.
+
+let indexDocs = null;
+let indexLoading = null;
+
+const loadIndex = () => {
+  if (indexDocs) return Promise.resolve(indexDocs);
+  if (!indexLoading) {
+    const url = document.body.dataset.index;
+    indexLoading = fetch(url)
+      .then((r) => r.json())
+      .then((d) => (indexDocs = d))
+      .catch(() => (indexDocs = []));
+  }
+  return indexLoading;
+};
+
+const escapeHTML = (s) =>
+  s.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c],
+  );
+
+// ── link previews ───────────────────────────────────────────────────────────
+// Hovering a [[wikilink]] shows the opening of the note it points at, so a
+// cross-reference can be checked without losing your place. Pointer devices
+// only — on a touch screen a tap should just follow the link.
+
+(function linkPreviews() {
+  const card = document.querySelector("[data-preview]");
+  if (!card) return;
+  if (!window.matchMedia("(hover: hover)").matches) return;
+
+  const DELAY = 220;
+  let byUrl = null;
+  let timer = null;
+  let active = null;
+
+  const hide = () => {
+    clearTimeout(timer);
+    if (active) active.removeAttribute("aria-describedby");
+    active = null;
+    card.hidden = true;
+  };
+
+  // Anchored under the link, flipped above when the bottom is close, and
+  // always kept inside the viewport.
+  const place = (link) => {
+    card.style.left = "0px";
+    card.style.top = "0px";
+    const l = link.getBoundingClientRect();
+    const c = card.getBoundingClientRect();
+    const edge = 8;
+    const room = document.documentElement.clientWidth;
+
+    let left = l.left + window.scrollX;
+    left = Math.min(left, window.scrollX + room - c.width - edge);
+    left = Math.max(left, window.scrollX + edge);
+
+    const below = l.bottom + c.height + 14 < window.innerHeight;
+    const top = below
+      ? l.bottom + window.scrollY + 6
+      : l.top + window.scrollY - c.height - 6;
+
+    card.style.left = left + "px";
+    card.style.top = top + "px";
+  };
+
+  const show = (link) => {
+    loadIndex().then((docs) => {
+      if (active !== link) return;
+      if (!byUrl) {
+        byUrl = new Map();
+        for (const d of docs) byUrl.set(d.u, d);
+      }
+      const doc = byUrl.get(link.getAttribute("href").split("#")[0]);
+      if (!doc || !doc.b) return;
+
+      card.innerHTML =
+        '<span class="preview__title">' +
+        escapeHTML(doc.t) +
+        "</span>" +
+        (doc.s ? '<span class="preview__where">' + escapeHTML(doc.s) + "/</span>" : "") +
+        '<span class="preview__body">' +
+        escapeHTML(doc.b.slice(0, 240)) +
+        (doc.b.length > 240 ? "…" : "") +
+        "</span>";
+      card.hidden = false;
+      place(link);
+      link.setAttribute("aria-describedby", card.id);
+    });
+  };
+
+  const arm = (e) => {
+    const link = e.target.closest("a.wikilink");
+    if (!link || link === active) return;
+    hide();
+    active = link;
+    timer = setTimeout(() => show(link), DELAY);
+  };
+
+  const disarm = (e) => {
+    if (active && e.target.closest("a.wikilink") === active) hide();
+  };
+
+  document.addEventListener("mouseover", arm);
+  document.addEventListener("mouseout", disarm);
+  document.addEventListener("focusin", arm);
+  document.addEventListener("focusout", disarm);
+  window.addEventListener("scroll", hide, { passive: true });
+  document.addEventListener("keydown", (e) => e.key === "Escape" && hide());
+})();
+
 // ── search ──────────────────────────────────────────────────────────────────
-// Substring scoring over a static JSON index. No library, no server.
+// Substring scoring over the static index. No library, no server.
 
 (function search() {
   const root = document.querySelector("[data-search]");
@@ -93,33 +215,8 @@
 
   const input = root.querySelector("[data-search-input]");
   const list = root.querySelector("[data-search-results]");
-  let docs = null;
-  let loading = null;
   let cursor = -1;
-
-  const load = () => {
-    if (docs) return Promise.resolve(docs);
-    if (!loading) {
-      loading = fetch(root.dataset.index)
-        .then((r) => r.json())
-        .then((d) => (docs = d))
-        .catch(() => (docs = []));
-    }
-    return loading;
-  };
-
-  const escapeHTML = (s) =>
-    s.replace(
-      /[&<>"']/g,
-      (c) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[c],
-    );
+  const load = loadIndex;
 
   const escapeRE = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -176,14 +273,14 @@
 
   const render = (query) => {
     const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-    if (!terms.length || !docs) {
+    if (!terms.length || !indexDocs) {
       list.hidden = true;
       list.innerHTML = "";
       cursor = -1;
       return;
     }
 
-    const hits = docs
+    const hits = indexDocs
       .map((d) => ({ d, n: score(d, terms) }))
       .filter((h) => h.n > 0)
       .sort((a, b) => b.n - a.n || a.d.t.length - b.d.t.length)

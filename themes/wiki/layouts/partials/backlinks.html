@@ -1,0 +1,22 @@
+{{- /*
+The notes that link here. A wiki's cross-references only pay off if they can
+be read in both directions.
+
+@context {page} The page to find inbound links for.
+*/}}
+{{- $here := .RelPermalink }}
+{{- $seen := slice }}
+{{- $sources := slice }}
+
+{{- range where (partialCached "wikilink-edges.html" .) "to" $here }}
+  {{- $from := .from }}
+  {{- if and (ne $from.RelPermalink $here) (not (in $seen $from.RelPermalink)) }}
+    {{- $seen = $seen | append $from.RelPermalink }}
+    {{- $sources = $sources | append $from }}
+  {{- end }}
+{{- end }}
+
+{{- with $sources }}
+  <h2 class="section-heading">Linked from</h2>
+  {{- partial "listing.html" . }}
+{{- end }}

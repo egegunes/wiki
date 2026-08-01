@@ -4,6 +4,7 @@
   {{ partial "meta.html" . }}
   {{ partial "toc.html" . }}
   <article class="prose">
-    {{ .Content }}
+    {{ partial "content.html" . }}
   </article>
+  {{ partial "backlinks.html" . }}
 {{ end }}

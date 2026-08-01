@@ -432,6 +432,14 @@ video {
   margin: 0.3rem 0;
 }
 
+/* A [[wikilink]] with no note behind it yet. Shown rather than hidden: the
+   notes you have already referenced are the ones worth writing next. */
+.wikilink--missing {
+  color: var(--fg-muted);
+  border-bottom: 1px dashed currentColor;
+  cursor: help;
+}
+
 .prose blockquote {
   margin-left: 0;
   padding-left: 1rem;
@@ -960,6 +968,48 @@ pre {
   padding: 0.5rem;
   font: 400 0.8125rem/1.5 var(--mono);
   color: var(--fg-muted);
+}
+
+/* ── link preview ────────────────────────────────────────────────────────── */
+
+.preview {
+  position: absolute;
+  z-index: 40;
+  max-width: min(26rem, calc(100vw - 2rem));
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  box-shadow: 0 10px 28px -12px rgb(0 0 0 / 0.35);
+  /* Never intercepts the pointer, so it cannot flicker the link underneath. */
+  pointer-events: none;
+}
+
+.preview[hidden] {
+  display: none;
+}
+
+.preview__title {
+  display: block;
+  font: 600 0.8125rem/1.4 var(--mono);
+  color: var(--fg);
+}
+
+.preview__where {
+  display: block;
+  font: 400 0.6875rem/1.5 var(--mono);
+  color: var(--fg-muted);
+}
+
+.preview__body {
+  display: -webkit-box;
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--fg-muted);
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ── theme toggle ────────────────────────────────────────────────────────── */

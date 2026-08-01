@@ -1,0 +1,40 @@
+{{- /*
+Parses one raw [[wikilink]] and resolves it against the site.
+
+Shared by the renderer in content.html and by the link graph behind backlinks,
+so both agree on exactly what a given wikilink points at.
+
+@context {string} raw   The literal match, including brackets.
+@context {map}    index From partials/wikilink-index.html.
+@return  {map}    target, label, url ("" when no such note), anchor
+*/}}
+{{- $raw := .raw }}
+{{- $index := .index }}
+{{- $inner := substr $raw 2 (sub (len $raw) 4) }}
+
+{{- /* [[target|label]] */}}
+{{- $target := $inner }}
+{{- $label := "" }}
+{{- if strings.Contains $inner "|" }}
+  {{- $bits := split $inner "|" }}
+  {{- $target = index $bits 0 }}
+  {{- $label = trim (delimit (after 1 $bits) "|") " " }}
+{{- end }}
+
+{{- /* [[target#heading]] */}}
+{{- $heading := "" }}
+{{- if strings.Contains $target "#" }}
+  {{- $bits := split $target "#" }}
+  {{- $target = index $bits 0 }}
+  {{- $heading = trim (delimit (after 1 $bits) "#") " " }}
+{{- end }}
+
+{{- $target = trim $target " " }}
+{{- if not $label }}{{ $label = $target }}{{ end }}
+
+{{- $url := index $index (lower $target) }}
+{{- if not $url }}
+  {{- with site.GetPage $target }}{{ $url = .RelPermalink }}{{ end }}
+{{- end }}
+
+{{- return (dict "target" $target "label" $label "url" (or $url "") "anchor" $heading) }}

@@ -2,7 +2,7 @@
   <p class="masthead__title"><a href="{{ "/" | relURL }}">{{ site.Title }}</a></p>
   <div class="masthead__spacer"></div>
   {{ if site.Params.search | default true }}
-    <div class="search" data-search data-index="{{ "index.json" | relURL }}">
+    <div class="search" data-search>
       <input
         class="search__input"
         type="search"

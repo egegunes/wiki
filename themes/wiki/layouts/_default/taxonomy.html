@@ -2,7 +2,7 @@
   {{ partial "cmdline.html" . }}
   <h1 class="page-title">{{ .Title }}</h1>
   {{ with .Content }}
-    <article class="prose">{{ . }}</article>
+    <article class="prose">{{ partial "content.html" $ }}</article>
   {{ end }}
   {{ with .Data.Terms.ByCount }}
     <ul class="tags">

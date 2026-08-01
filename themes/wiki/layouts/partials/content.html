@@ -1,0 +1,83 @@
+{{- /*
+Page content with Obsidian-style [[wikilinks]] resolved.
+
+  [[Note name]]              link by title or filename, case-insensitive
+  [[Note name|other text]]   link with different link text
+  [[Note name#Heading]]      link to a heading inside that note
+  [[section/note]]           link by path
+
+A name with no matching note renders as an unresolved link rather than
+disappearing — an unwritten note you have already referenced is worth seeing.
+
+Brackets inside code are left alone. Bash writes `if [[ -z $x ]]` and means it,
+so the content is split on <code> elements and only the text outside them is
+rewritten.
+
+@context {page} The page whose .Content to render.
+*/}}
+{{- $html := printf "%s" .Content }}
+
+{{- if not (strings.Contains $html "[[") }}
+  {{- $html | safeHTML }}
+{{- else }}
+  {{- $index := partialCached "wikilink-index.html" . }}
+
+  {{- /*
+    Resolve each distinct wikilink once, into two parallel slices. A map keyed
+    by the raw text would lose links: merge compares keys case-insensitively,
+    so [[mysql GROUP replication]] would collapse into an earlier
+    [[MySQL Group Replication]] and never be replaced.
+  */}}
+  {{- $raws := slice }}
+  {{- $links := slice }}
+  {{- range $raw := findRE `\[\[[^\[\]<>\n]+\]\]` $html }}
+    {{- if not (in $raws $raw) }}
+      {{- $raws = $raws | append $raw }}
+      {{- $links = $links | append
+        (partial "inline/wikilink.html" (dict "raw" $raw "index" $index)) }}
+    {{- end }}
+  {{- end }}
+
+  {{- /* Split into alternating outside/inside-code segments, losslessly. */}}
+  {{- $segments := slice }}
+  {{- range $i, $part := split $html "<code" }}
+    {{- if eq $i 0 }}
+      {{- $segments = $segments | append (dict "code" false "text" $part) }}
+    {{- else }}
+      {{- $halves := split $part "</code>" }}
+      {{- $segments = $segments | append (dict "code" true "text" (printf "<code%s" (index $halves 0))) }}
+      {{- if gt (len $halves) 1 }}
+        {{- $segments = $segments | append (dict "code" false "text"
+          (printf "</code>%s" (delimit (after 1 $halves) "</code>"))) }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  {{- $out := "" }}
+  {{- range $segments }}
+    {{- $text := .text }}
+    {{- if not .code }}
+      {{- range $i, $raw := $raws }}
+        {{- $text = replace $text $raw (index $links $i) }}
+      {{- end }}
+    {{- end }}
+    {{- $out = print $out $text }}
+  {{- end }}
+  {{- $out | safeHTML }}
+{{- end }}
+
+
+{{- /* Renders one [[wikilink]] to an anchor, or to an unresolved marker. */}}
+{{- define "partials/inline/wikilink.html" }}
+  {{- $link := partial "wikilink-parse.html" . }}
+  {{- if $link.url }}
+    {{- $url := $link.url }}
+    {{- with $link.anchor }}{{ $url = printf "%s#%s" $url (anchorize .) }}{{ end }}
+    {{- printf `<a class="wikilink" href="%s">%s</a>` $url $link.label | safeHTML }}
+  {{- else }}
+    {{- /* The text came from rendered HTML, so only quotes still need escaping
+           before it can sit inside an attribute. */}}
+    {{- $hint := replace $link.target `"` "&quot;" }}
+    {{- printf `<span class="wikilink wikilink--missing" title="No note named &quot;%s&quot; yet">%s</span>` $hint $link.label | safeHTML }}
+  {{- end }}
+{{- end }}

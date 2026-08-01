@@ -3,7 +3,7 @@
 <head>
   {{ partial "head.html" . }}
 </head>
-<body>
+<body data-index="{{ "index.json" | relURL }}">
   <a class="skip-link" href="#content">Skip to content</a>
   {{ partial "masthead.html" . }}
   <div class="layout">
@@ -13,6 +13,9 @@
     </main>
     {{ partial "footer.html" . }}
   </div>
+  {{ if site.Params.linkPreviews | default true }}
+    <div class="preview" id="link-preview" role="tooltip" data-preview hidden></div>
+  {{ end }}
   {{ partial "head/js.html" . }}
 </body>
 </html>

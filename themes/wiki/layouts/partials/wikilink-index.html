@@ -1,0 +1,21 @@
+{{- /*
+A lookup from note name to URL, for resolving [[wikilinks]].
+
+Every page is registered under its lowercased title and its filename, so both
+[[MySQL Group Replication]] and [[mysql-group-replication]] find the same note.
+Built once per site via partialCached.
+
+@return {map} lowercased name -> RelPermalink
+*/}}
+{{- $index := dict }}
+{{- range where site.Pages "Kind" "in" (slice "page" "section") }}
+  {{- $url := .RelPermalink }}
+  {{- with .Title }}
+    {{- $index = merge $index (dict (lower .) $url) }}
+    {{- $index = merge $index (dict (urlize .) $url) }}
+  {{- end }}
+  {{- with .File }}
+    {{- $index = merge $index (dict (lower .ContentBaseName) $url) }}
+  {{- end }}
+{{- end }}
+{{- return $index }}

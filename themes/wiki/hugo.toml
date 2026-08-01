@@ -10,6 +10,8 @@
   root = 'wiki'
   # Show the search box.
   search = true
+  # Preview the target note when a wikilink is hovered. Pointer devices only.
+  linkPreviews = true
   # Warn on notes older than this many months. 0 disables it.
   staleAfterMonths = 18
   # Render a table of contents once a note has this many headings.
