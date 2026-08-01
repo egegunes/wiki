@@ -19,6 +19,8 @@ pluralizeListTitles = false
   staleAfterMonths = 0
   # Show the search box.
   search = true
+  # Preview the target note when a wikilink is hovered. Pointer devices only.
+  linkPreviews = true
   # Render a table of contents once a note has this many headings.
   tocMinHeadings = 3
   # repo = 'https://github.com/egegunes/wiki'
