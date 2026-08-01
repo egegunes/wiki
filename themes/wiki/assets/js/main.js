@@ -121,13 +121,27 @@
         })[c],
     );
 
+  const escapeRE = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  // Match on the raw text and escape each piece afterwards. Escaping first
+  // would let a search for "quo" or "39" land inside an entity like &quot;
+  // or &#39; and split it into broken markup.
   const mark = (text, terms) => {
-    let out = escapeHTML(text);
-    for (const t of terms) {
-      const re = new RegExp("(" + t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
-      out = out.replace(re, "<mark>$1</mark>");
+    if (!terms.length) return escapeHTML(text);
+    const re = new RegExp("(" + terms.map(escapeRE).join("|") + ")", "gi");
+    let out = "";
+    let last = 0;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      if (!m[0]) {
+        re.lastIndex++;
+        continue;
+      }
+      out += escapeHTML(text.slice(last, m.index));
+      out += "<mark>" + escapeHTML(m[0]) + "</mark>";
+      last = m.index + m[0].length;
     }
-    return out;
+    return out + escapeHTML(text.slice(last));
   };
 
   // Title beats tag beats path beats body. Prefix matches beat mid-word ones.
@@ -183,14 +197,15 @@
         .map(
           ({ d }) =>
             '<li><a href="' +
-            d.u +
+            escapeHTML(d.u) +
             '"><span class="search__title">' +
             mark(d.t, terms) +
             "</span>" +
             (d.s ? '<span class="search__where">' + escapeHTML(d.s) + "/</span>" : "") +
-            '<span class="search__snippet">' +
-            mark(snippet(d, terms), terms) +
-            "</span></a></li>",
+            (d.b
+              ? '<span class="search__snippet">' + mark(snippet(d, terms), terms) + "</span>"
+              : "") +
+            "</a></li>",
         )
         .join("");
     }

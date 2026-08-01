@@ -1,15 +1,28 @@
-{{- /* Search index: title, where it lives, tags, and enough body to match on. */}}
+{{- /*
+Search index: title, where it lives, tags, and enough body to match on.
+
+.Plain is the rendered page with tags stripped, so it still carries HTML
+entities — "it's" arrives as "it&#39;s". htmlUnescape puts the real characters
+back. Truncation uses substr rather than truncate because truncate is
+HTML-aware and would re-escape everything htmlUnescape just fixed.
+
+Titles and tags come straight from front matter and are never escaped, so they
+are indexed as written.
+*/}}
 {{- $index := slice }}
 {{- range where site.Pages "Kind" "in" (slice "page" "section") }}
   {{- if not .Params.noindex }}
     {{- $dir := path.Dir (strings.Trim .RelPermalink "/") }}
     {{- if or (eq $dir ".") (eq $dir "/") }}{{ $dir = "" }}{{ end }}
+    {{- /* trim takes (input, cutset), so it cannot go in the pipeline. */}}
+    {{- $body := trim (.Plain | htmlUnescape | replaceRE `\s+` " ") " " }}
+    {{- if gt (len $body) 1800 }}{{ $body = printf "%s…" (substr $body 0 1800) }}{{ end }}
     {{- $index = $index | append (dict
       "t" .LinkTitle
       "u" .RelPermalink
       "s" $dir
       "g" (.Params.tags | default slice)
-      "b" (.Plain | replaceRE `\s+` " " | truncate 1800 "")
+      "b" $body
     ) }}
   {{- end }}
 {{- end }}
